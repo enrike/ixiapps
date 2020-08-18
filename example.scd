@@ -1,4 +1,4 @@
-Lauki.new
+Lauki.new // just run this
 
 
 
@@ -10,7 +10,7 @@ Lauki.new(800, 600)
 
 
 
-(
+( // plan to have a launcher with all the apps available
 var path = thisProcess.nowExecutingPath.dirname;
 var utils = List.new;
 
@@ -23,9 +23,9 @@ w.onClose = {
 
 w.view.decorator.nextLine;
 
-ActionButton(w,"feedback",{
+ActionButton(w,"Lauki",{
 	path.postln;
-	utils.add( Lauki.new( 800, 600, path) );
+	utils.add( Lauki.new( path: path) );
 });
 w.front
 )
