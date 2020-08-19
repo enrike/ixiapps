@@ -47,8 +47,8 @@ IxiLaukiControl {
 		win.onClose = {};
 
 		// GLOBAL
-		StaticText(win, 20@18).align_(\right).string_("In").resize_(7);
-		gcontrols[\in] = PopUpMenu(win, Rect(10, 10, 45, 17))
+		StaticText(win, 15@18).align_(\left).string_("In").resize_(7);
+		gcontrols[\in] = PopUpMenu(win, Rect(10, 10, 42, 17))
 		.items_( Array.fill(16, { arg i; i }) )
 		.action_({|m|
 			gstate[\in] = m.value;
@@ -56,14 +56,20 @@ IxiLaukiControl {
 		})
 		.value_(gstate[\in]); // default to sound in
 
-		StaticText(win, 20@18).align_(\right).string_("Out").resize_(7);
-		gcontrols[\out] = PopUpMenu(win, Rect(10, 10, 45, 17))
+		StaticText(win, 15@18).align_(\left).string_("Out").resize_(7);
+		gcontrols[\out] = PopUpMenu(win, Rect(10, 10, 42, 17))
 		.items_( Array.fill(16, { arg i; i }) )
 		.action_({|m|
 			gstate[\out] = m.value;
 			main.boxes.collect({|b|b.out(m.value)})
 		})
 		.value_(gstate[\out]); // default to sound in
+
+		//win.view.decorator.nextLine;
+
+		ActionButton(win,"VU",{
+			Server.default.meter(2,2)
+		});
 
 		ActionButton(win,"HELP",{
 			var help = Window.new("Help", Rect(~stagewidth/2, ~stageheight/2, 280, 100) ).front;
@@ -179,7 +185,7 @@ IxiLaukiControl {
 				data.put("box"++n, box.state)
 			};
 
-			data.put(\boxdata, boxdata);
+			//data.put(\boxdata, boxdata);
 
 			("saving sessions into" + ~path ++ Platform.pathSeparator ++ "sessions" ++ Platform.pathSeparator ++ filename).postln;
 
@@ -190,7 +196,7 @@ IxiLaukiControl {
 		ActionButton(win,"O",{
 			FileDialog({ |apath| // open import
 				var	data = Object.readArchive(apath);
-				("reading session"+apath).postln;
+				("reading session"+apath.fileName).postln;
 
 				controls[\pat_label].string = "Sessions:"+PathName(apath).fileName.split($.)[0];
 
@@ -215,18 +221,10 @@ IxiLaukiControl {
 			controls[\pat_label].string = "Sessions";
 			main.dogrid;
 		});
-		ActionButton(win,"rand",{
+		ActionButton(win,"rloc",{
 			controls[\pat_label].string = "Sessions";
 			main.rand
 		});
-
-		/*		controls[\presets] = PopUpMenu(win, 80@18)
-		.items_( ["grid", "rand grid"])
-		.action_({ |menu|
-		var fs=[{main.dogrid},{main.rand}];
-		controls[\pat_label].string = "Sessions";
-		fs[menu.value].value
-		});*/
 
 		win.front;
 	}
@@ -256,7 +254,7 @@ Lauki : IxiWin {
 
 		selection = IxiSelection.new;
 
-		~laukicontrol = IxiLaukiControl.new(rect: Rect(win.bounds.right,win.bounds.height, 200, 210),
+		~laukicontrol = IxiLaukiControl.new(rect: Rect(win.bounds.right,win.bounds.height, 200, 230),
 			main: this, exepath: path);
 		//~laukicontrol.boxes = boxes; // keep a ref
 		//ctrlw.alwaysOnTop=true;
@@ -436,7 +434,7 @@ IxiLaukiBoxMenu {
 	// PAUSE, MUTE ??
 
 	init { |box|
-		var items = ~ixibuffers.values.collect({|it| PathName(it.path).fileName.asSymbol});//sounds
+		var items = ~ixibuffers.values.collect({|it| PathName(it.path).fileName});//sounds
 
 		Menu(
 			MenuAction("box:"+box.id, {}).enabled_(false),
@@ -444,7 +442,7 @@ IxiLaukiBoxMenu {
 				PopUpMenu()
 				.items_(items)
 				.action_({ |menu| box.setsound(menu.item) })
-				.value_( items.indexOfEqual(box.state[\snd].asSymbol) )
+				.value_( items.indexOfEqual(box.state[\snd]) )
 			),
 			CustomViewAction( //AMP
 				Slider().orientation_(\horizontal)
