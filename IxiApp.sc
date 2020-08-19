@@ -14,12 +14,11 @@ IxiLaukiControl {
 		var fpaths, files=List.new;
 
 		gstate = Dictionary.new;
-		gstate[\pitchrange] = [-1,1];
+		gstate[\pitchrange] = [-2,2];
 		gstate[\sound] = "";
-		//gstate[\loop] = true;
+		gstate[\in] = 0;
+		gstate[\out] = 0;
 		gstate[\amp] = 1;
-		//gstate[\range] = [0,1];
-		//gstate[\lock] = false;
 
 		main = amain; // ref to main win
 
@@ -48,41 +47,56 @@ IxiLaukiControl {
 		win.onClose = {};
 
 		// GLOBAL
-		StaticText(win, 50@18).string_("Global");
-
-
 		StaticText(win, 20@18).align_(\right).string_("In").resize_(7);
 		gcontrols[\in] = PopUpMenu(win, Rect(10, 10, 45, 17))
 		.items_( Array.fill(16, { arg i; i }) )
-		.action_{|m|
+		.action_({|m|
 			gstate[\in] = m.value;
-			main.box.in(m.value)
-			//synth.set(\in, m.value);
-		}
-		.value_(0); // default to sound in
+			main.boxes.collect({|b|b.in(m.value)})
+		})
+		.value_(gstate[\in]); // default to sound in
 
 		StaticText(win, 20@18).align_(\right).string_("Out").resize_(7);
 		gcontrols[\out] = PopUpMenu(win, Rect(10, 10, 45, 17))
 		.items_( Array.fill(16, { arg i; i }) )
-		.action_{|m|
+		.action_({|m|
 			gstate[\out] = m.value;
-			main.box.out(m.value)
-			//synth.set(\out, m.value);
-		}
-		.value_(0); // default to sound in
+			main.boxes.collect({|b|b.out(m.value)})
+		})
+		.value_(gstate[\out]); // default to sound in
 
+		ActionButton(win,"HELP",{
+			"== HELP ==================".postcln;
+			"Lauki by www.ixi-audio.net".postcln;
+			"Click boxes to trigger selected sound".postcln;
+			"SPACE + drag to move boxes".postcln;
+			"Right click boxes for menu".postcln;
+			"Right click background for create box menu".postcln;
+			"==========================".postcln;
+			//help=StaticText(win, 4000@400).align_(\right).string_("QUICK HELP").resize_(7);
+		});
+
+		win.view.decorator.nextLine;
+
+		StaticText(win, 30@18).string_("Amp");
+
+		win.view.decorator.nextLine;
 
 		gcontrols[\amp] = Slider(win, 190@20)
 		.action_({ |sl|
 			gstate[\amp] = sl.value;
 			main.boxes.collect({|box| box.amp(sl.value)}) // THIS MUST CONTROL A BUS not individual synths
-		});
+		})
+		.value_(gstate[\amp]);
 
+		gcontrols[\range_label] = StaticText(win, 190@18).string_("Pitch range: -2 : 2");
 		gcontrols[\range] = RangeSlider(win, 190@20)
-		.lo_(0)
-		.range_(1)
+		.lo_(gstate[\pitchrange][0])
+		.range_(gstate[\pitchrange][1])
 		.action_({ |sl|
 			gstate[\pitchrange] = [sl.lo, sl.hi];
+			gcontrols[\range_label].string = "Pitch range" + sl.lo.asStringPrec(2) + ":" + sl.hi.asStringPrec(2);
+			main.boxes.collect({|box| box.range( sl.lo, sl.hi )})
 		});
 
 		win.view.decorator.nextLine;
@@ -206,19 +220,6 @@ IxiLaukiControl {
 			main.rand
 		});
 
-		win.view.decorator.nextLine;
-		ActionButton(win,"HELP",{
-			"== HELP ==================".postcln;
-			"Lauki by www.ixi-audio.net".postcln;
-			"Click boxes to trigger selected sound".postcln;
-			"SPACE + drag to move boxes".postcln;
-			"Right click boxes for menu".postcln;
-			"Right click background for create box menu".postcln;
-			"==========================".postcln;
-			//help=StaticText(win, 4000@400).align_(\right).string_("QUICK HELP").resize_(7);
-		});
-
-
 		win.front;
 	}
 
@@ -247,7 +248,7 @@ Lauki : IxiWin {
 
 		selection = IxiSelection.new;
 
-		~laukicontrol = IxiLaukiControl.new(rect: Rect(win.bounds.right,win.bounds.height, 200, 200),
+		~laukicontrol = IxiLaukiControl.new(rect: Rect(win.bounds.right,win.bounds.height, 200, 210),
 			main: this, exepath: path);
 		//~laukicontrol.boxes = boxes; // keep a ref
 		//ctrlw.alwaysOnTop=true;
