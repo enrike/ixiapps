@@ -198,7 +198,7 @@ IxiLaukiControl {
 				var	data = Object.readArchive(apath);
 				("reading session"+apath).postln;
 
-				controls[\pat_label].string = "Sessions:"+PathName(apath).fileName.split($.)[0];
+				controls[\pat_label].string = "Sessions:" + PathName(apath).fileName.split($.)[0];
 
 				main.clear; // killem all
 
@@ -250,15 +250,10 @@ Lauki : IxiWin {
 
 		OSCdef.freeAll;
 
-		//this.dogrid;
-
-		selection = IxiSelection.new;
+		selection = IxiSelection.new(this);
 
 		~laukicontrol = IxiLaukiControl.new(rect: Rect(win.bounds.right,win.bounds.height, 200, 230),
 			main: this, exepath: path);
-		//~laukicontrol.boxes = boxes; // keep a ref
-		//ctrlw.alwaysOnTop=true;
-
 
 		Server.default.waitForBoot{
 			SynthDef( \laukiplayer, { arg out=0, buffer=0, amp=1, pan=0, start=0, end=1, rate=0, loop=1, reset=0, index=999, trig=1;
@@ -286,17 +281,21 @@ Lauki : IxiWin {
 		data.do{|next|
 			this.newbox( next[\rect].origin, next )
 		};
-		selection.updateselectables(boxes);
 	}
 
-	updateselectables {
-		selection.updateselectables(boxes);
+	getselectables {
+		^boxes;
 	}
 
 	newbox {|point, state|
 		var box = LaukiBox.new( point, index: boxes.size+1, state: state );
 		boxes.add(box);
 		^box;
+	}
+
+	removebox {|box|
+		box.close;
+		boxes.removeAt( boxes.indexOf(box) );
 	}
 
 	dogrid {
@@ -311,8 +310,7 @@ Lauki : IxiWin {
 				x = 10;
 				y = y + ygap
 			})
-		});
-		selection.updateselectables(boxes);
+		})
 	}
 
 	rand {
@@ -327,7 +325,6 @@ Lauki : IxiWin {
 			box = nil;
 		});
 		boxes = List.new;
-		selection.updateselectables(boxes);
 	}
 
 	close {
@@ -418,7 +415,7 @@ IxiLaukiMenu {
 
 	init { |main|
 		Menu(
-			MenuAction("new Lauki", { main.newbox(~mouseloc) }),
+			MenuAction("new Lauki", { main.newbox(~mouseloc) }), // MUST inform selection
 			MenuAction("new Spin", { main.newspin(~mouseloc) });
 		).front
 	}
@@ -431,7 +428,6 @@ IxiLaukiBoxMenu {
 	*new { |box|
 		^super.new.init(box);
 	}
-	// PAUSE, MUTE ??
 
 	init { |box|
 		var items = ~ixibuffers.values.collect({|it| PathName(it.path).fileName});//sounds
@@ -465,7 +461,7 @@ IxiLaukiBoxMenu {
 			MenuAction("hlock", { box.state[\hlock] = box.state[\hlock].not }).checked_(box.state[\hlock]),
 			MenuAction("vlock", { box.state[\vlock] = box.state[\vlock].not }).checked_(box.state[\vlock]),
 			MenuAction.separator,
-			MenuAction("delete", {box.close}) // TO DO: THIS MUST remove it from the stack
+			MenuAction("delete", { box.close }) // MUST remove me from main stack
 
 		).front;
 	}
@@ -584,8 +580,8 @@ LaukiBox : IxiBox {
 	}
 
 	setsound {|file|
+		state[\snd] = file;
 		if (synth.notNil,{ // already playing
-			state[\snd] = file;
 			synth.set(\buffer, ~ixibuffers[file].bufnum)
 		})
 	}
@@ -649,7 +645,7 @@ LaukiBox : IxiBox {
 		color = initcolor
 	}
 
-	draw{
+	draw { // overwrites super
 		if (visible == true, {
 			//super.draw;
 			Pen.color = color;

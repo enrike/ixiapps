@@ -94,14 +94,15 @@ IxiWin {
 
 
 IxiSelection {
-	var selectables, <selected, winRect;
+	var main, selectables, <selected, winRect;
 	var color, bgcolor, visible, rect, >lowGraphicsMode;
 
-	*new {
-		^super.new.init;
+	*new {|main|
+		^super.new.init(main);
 	}
 
-	init {
+	init {|amain|
+		main = amain;
 		selectables = List.new;
 		rect = Rect(0,0,0,0);
 		color = Color(0, 0, 0, 0.4);
@@ -111,6 +112,7 @@ IxiSelection {
 
 	start {|x,y|
 		"start selection tool".postln;
+		selectables = main.boxes;
 		visible = true;
 		rect = Rect(0,0,0,0);
 		rect.left = x;
