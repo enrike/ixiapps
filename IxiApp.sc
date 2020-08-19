@@ -4,7 +4,7 @@ license GPL
 */
 
 IxiLaukiControl {
-	var win, controls, gcontrols, sfs, >target, main, <gstate, help;
+	var win, controls, gcontrols, sfs, >target, main, <gstate;
 
 	*new { |name="Control", rect, exepath, main|
 		^super.new.init(name, rect, exepath, main)
@@ -66,14 +66,29 @@ IxiLaukiControl {
 		.value_(gstate[\out]); // default to sound in
 
 		ActionButton(win,"HELP",{
-			"== HELP ==================".postcln;
+/*			"== HELP ==================".postcln;
 			"Lauki by www.ixi-audio.net".postcln;
 			"Click boxes to trigger selected sound".postcln;
 			"SPACE + drag to move boxes".postcln;
 			"Right click boxes for menu".postcln;
 			"Right click background for create box menu".postcln;
-			"==========================".postcln;
-			//help=StaticText(win, 4000@400).align_(\right).string_("QUICK HELP").resize_(7);
+			"==========================".postcln;*/
+			var help = Window.new("Help", Rect(~stagewidth/2, ~stageheigth/2, 250, 100) ).front;
+			StaticText(help).string_(
+				"Lauki by www.ixi-audio.net \n"++
+				"Click boxes to trigger selected sound \n"++
+				"SPACE + drag to move boxes \n"++
+				"Right click boxes for menu \n"++
+				"Right click background for create box menu"
+			);
+
+/*			SCAlert.new(string:
+				"Lauki by www.ixi-audio.net \n"++
+				"Click boxes to trigger selected sound \n"++
+				"SPACE + drag to move boxes \n"++
+				"Right click boxes for menu \n"++
+				"Right click background for create box menu"
+			)*/
 		});
 
 		win.view.decorator.nextLine;
@@ -219,6 +234,14 @@ IxiLaukiControl {
 			controls[\pat_label].string = "Sessions";
 			main.rand
 		});
+
+		/*		controls[\presets] = PopUpMenu(win, 80@18)
+		.items_( ["grid", "rand grid"])
+		.action_({ |menu|
+		var fs=[{main.dogrid},{main.rand}];
+		controls[\pat_label].string = "Sessions";
+		fs[menu.value].value
+		});*/
 
 		win.front;
 	}
@@ -412,7 +435,8 @@ IxiLaukiMenu {
 
 	init { |main|
 		Menu(
-			MenuAction("new Lauki", { main.newbox(~mouseloc) })
+			MenuAction("new Lauki", { main.newbox(~mouseloc) });
+			MenuAction("new Spin", { main.newspin(~mouseloc) });
 		).front
 	}
 }
@@ -528,7 +552,7 @@ LaukiBox : IxiBox {
 	dorate {
 		var rate, prange;
 		prange = ~laukicontrol.gstate[\pitchrange];
-		rate = ( ((~stageheigth-rect.center.y)/~stageheigth) * (prange[1]-prange[0]) ) + prange[0];
+		rate = ( ((~stageheigth-rect.center.y)/~stageheight) * (prange[1]-prange[0]) ) + prange[0];
 		if( (rate<0.005) && (rate>0.005.neg), {rate = 0.008}); // not too slow
 		^rate
 	}
@@ -630,7 +654,7 @@ LaukiBox : IxiBox {
 		loopcount = 0;
 		synth.free;
 		synth = nil;
-		this.release
+		this.release;
 	}
 
 	lock {

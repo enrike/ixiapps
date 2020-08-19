@@ -25,7 +25,7 @@ IxiWin {
 		});
 
 		~stagewidth = win.bounds.width.asFloat;
-		~stageheigth = win.bounds.height.asFloat;
+		~stageheight = win.bounds.height.asFloat;
 
 		canvas = UserView(win, win.view.bounds.width@win.view.bounds.height)
 		.canFocus_(false)
@@ -244,4 +244,6 @@ IxiBox {
 	inside {|x,y|
 		^rect.containsPoint(Point(x,y))
 	}
+
+	close {}
 }
