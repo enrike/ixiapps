@@ -4,7 +4,7 @@ license GPL
 */
 
 IxiLaukiControl {
-	var win, controls, gcontrols, sfs, >target, main, <gstate;
+	var win, controls, gcontrols, sfs, >target, main, <gstate, help;
 
 	*new { |name="Control", rect, exepath, main|
 		^super.new.init(name, rect, exepath, main)
@@ -49,6 +49,28 @@ IxiLaukiControl {
 
 		// GLOBAL
 		StaticText(win, 50@18).string_("Global");
+
+
+		StaticText(win, 20@18).align_(\right).string_("In").resize_(7);
+		gcontrols[\in] = PopUpMenu(win, Rect(10, 10, 45, 17))
+		.items_( Array.fill(16, { arg i; i }) )
+		.action_{|m|
+			gstate[\in] = m.value;
+			main.box.in(m.value)
+			//synth.set(\in, m.value);
+		}
+		.value_(0); // default to sound in
+
+		StaticText(win, 20@18).align_(\right).string_("Out").resize_(7);
+		gcontrols[\out] = PopUpMenu(win, Rect(10, 10, 45, 17))
+		.items_( Array.fill(16, { arg i; i }) )
+		.action_{|m|
+			gstate[\out] = m.value;
+			main.box.out(m.value)
+			//synth.set(\out, m.value);
+		}
+		.value_(0); // default to sound in
+
 
 		gcontrols[\amp] = Slider(win, 190@20)
 		.action_({ |sl|
@@ -127,31 +149,36 @@ IxiLaukiControl {
 
 
 
-		// PATTERNS
-		controls[\pat_label] = StaticText(win, win.bounds.width@18).string_("Patterns");
+		// SESSIONS
+		controls[\pat_label] = StaticText(win, win.bounds.width@18).string_("Sessions");
 
 		win.view.decorator.nextLine;
 
 		ActionButton(win,"S",{
-			var data = Dictionary.new,  filename;¡
-			filename = Date.getDate.stamp++".pattern";
+			var data = Dictionary.new, boxdata = Dictionary.new,  filename;
+			filename = Date.getDate.stamp++".session";
+
+			//data.put(\prange, gstate[\pitchrange]);
+			//data.put(\amp, gstate[\amp]);
 
 			main.boxes.do{|box, n|
 				data.put("box"++n, box.state)
 			};
 
-			("saving pattern into" + ~path ++ Platform.pathSeparator ++ "patterns" ++ Platform.pathSeparator ++ filename).postln;
+			data.put(\boxdata, boxdata);
 
-			data.writeArchive(~path ++ Platform.pathSeparator ++ "patterns" ++ Platform.pathSeparator ++ filename);
+			("saving sessions into" + ~path ++ Platform.pathSeparator ++ "sessions" ++ Platform.pathSeparator ++ filename).postln;
+
+			data.writeArchive(~path ++ Platform.pathSeparator ++ "sessions" ++ Platform.pathSeparator ++ filename);
 		});
 
 
 		ActionButton(win,"O",{
 			FileDialog({ |apath| // open import
 				var	data = Object.readArchive(apath);
-				("reading pattern"+apath).postln;
+				("reading session"+apath).postln;
 
-				controls[\pat_label].string = "Patterns:"+PathName(apath).fileName.split($.)[0];
+				controls[\pat_label].string = "Sessions:"+PathName(apath).fileName.split($.)[0];
 
 				main.clear; // killem all
 
@@ -162,30 +189,38 @@ IxiLaukiControl {
 			},
 			fileMode: 0,
 			stripResult: true,
-			path: (~path ++ Platform.pathSeparator ++ "patterns"++ Platform.pathSeparator)
+			path: (~path ++ Platform.pathSeparator ++ "sessions"++ Platform.pathSeparator)
 			)
 		});
 
 		ActionButton(win,"clear",{
-			controls[\pat_label].string = "Patterns";
+			controls[\pat_label].string = "Sessions";
 			main.clear;
 		});
 		ActionButton(win,"grid",{
-			controls[\pat_label].string = "Patterns";
+			controls[\pat_label].string = "Sessions";
 			main.dogrid;
 		});
 		ActionButton(win,"rand",{
-			controls[\pat_label].string = "Patterns";
+			controls[\pat_label].string = "Sessions";
 			main.rand
 		});
 
+		win.view.decorator.nextLine;
+		ActionButton(win,"HELP",{
+			"== HELP ==================".postcln;
+			"Lauki by www.ixi-audio.net".postcln;
+			"Click boxes to trigger selected sound".postcln;
+			"SPACE + drag to move boxes".postcln;
+			"Right click boxes for menu".postcln;
+			"Right click background for create box menu".postcln;
+			"==========================".postcln;
+			//help=StaticText(win, 4000@400).align_(\right).string_("QUICK HELP").resize_(7);
+		});
+
+
 		win.front;
 	}
-
-	/*	setTarget {|atarget| // display all the targets internal values
-	target = atarget;
-	controls[\snd].value = atarget.sound;
-	}*/
 
 	close { win.close }
 }
@@ -234,12 +269,12 @@ Lauki : IxiWin {
 			Server.default.sync;
 		};
 
-		this.loaddefault // default pattern
+		this.loaddefault // default session
 	}
 
 	loaddefault {
 		var path, data;
-		path = ~path ++ Platform.pathSeparator ++ "patterns"++ Platform.pathSeparator++"default.pattern";
+		path = ~path ++ Platform.pathSeparator ++ "sessions"++ Platform.pathSeparator++"default.session";
 		data = Object.readArchive(path);
 		data.do{|next|
 			this.newbox( next[\rect].origin, next )
@@ -296,7 +331,7 @@ Lauki : IxiWin {
 
 	mouseDown {|x, y, mod|
 		boxes.do({|box|
-			if (box.in(x,y)==true,{
+			if (box.inside(x,y)==true,{
 				selected=box;
 				box.mouseDown(x,y, keypressed);
 			})
@@ -316,11 +351,12 @@ Lauki : IxiWin {
 	rightMouseDown {|x, y, mod|
 		var sel;
 		boxes.do({|box|
-			if (box.in(x,y)==true,{
+			if (box.inside(x,y)==true,{
 				sel = box;
 				box.rightMouseDown(x,y)
 			})
 		});
+		sel.postln;
 		sel ?? {IxiLaukiMenu.new(this)};
 	}
 
@@ -334,7 +370,7 @@ Lauki : IxiWin {
 				selected.dragged(x,y);
 			}, {
 				boxes.do({|box|
-					if (box.in(x,y)==true,{
+					if (box.inside(x,y)==true,{
 						if (box!=selected, {
 							box.play
 						})
@@ -393,6 +429,7 @@ IxiLaukiBoxMenu {
 		var items = ~ixibuffers.values.collect({|it| PathName(it.path).fileName.asSymbol});//sounds
 
 		Menu(
+			MenuAction("box:"+box.id, {}).enabled_(false),
 			CustomViewAction( //SND
 				PopUpMenu()
 				.items_(items)
@@ -499,15 +536,25 @@ LaukiBox : IxiBox {
 		^((rect.center.x/~stagewidth) * 2) - 1
 	}
 
+	in {|chan|
+		synth ?? synth.set(\in, chan)
+	}
+
+	out {|chan|
+		synth ?? synth.set(\out, chan)
+	}
+
 	amp {|val|
 		state[\amp] = val;
-		synth.set(\amp, val);
+		synth ?? synth.set(\amp, val);
 	}
 
 	range {|start, end|
 		state[\range] = [start, end];
-		synth.set(\start, start);
-		synth.set(\end, end);
+		if (synth.notNil, {
+			synth.set(\start, start);
+			synth.set(\end, end);
+		})
 	}
 
 	update {|delta| // called from dragged

@@ -2,9 +2,18 @@ Lauki.new // just run this
 
 
 
-
 Lauki.new(800, 600)
 
+
+/* to do
+- globals only for inter app communication
+- sound pool how?
+- sample into a buffer and overwrite. sound in chanel set
+- synths group into a bus and control de master volumen from the control panel
+- patters save global parameters as well
+- pattern load make sure it can alway finds the soundfiles
+- help button open a field with basic description
+*/
 
 
 

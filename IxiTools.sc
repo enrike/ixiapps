@@ -241,7 +241,7 @@ IxiBox {
 		})
 	}
 
-	in {|x,y|
+	inside {|x,y|
 		^rect.containsPoint(Point(x,y))
 	}
 }
