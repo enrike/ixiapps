@@ -196,7 +196,7 @@ IxiLaukiControl {
 		ActionButton(win,"O",{
 			FileDialog({ |apath| // open import
 				var	data = Object.readArchive(apath);
-				("reading session"+apath.fileName).postln;
+				("reading session"+apath).postln;
 
 				controls[\pat_label].string = "Sessions:"+PathName(apath).fileName.split($.)[0];
 
@@ -583,10 +583,10 @@ LaukiBox : IxiBox {
 		^nrect
 	}
 
-	setsound {|filename|
+	setsound {|file|
 		if (synth.notNil,{ // already playing
-			state[\snd] = filename;
-			synth.set(\buffer, ~ixibuffers[filename].bufnum)
+			state[\snd] = file;
+			synth.set(\buffer, ~ixibuffers[file].bufnum)
 		})
 	}
 
@@ -599,12 +599,12 @@ LaukiBox : IxiBox {
 			bgcolor = Color(0,1,0,0.5);
 
 			state[\playing] = true;
-			state[\snd] = ~laukibuffer;
+			if (state[\snd]=="", { state[\snd] = ~laukibuffer });
 			state[\rate] = this.dorate;
 			state[\pan] = this.dopan;
 
 			synth = Synth(\laukiplayer, [
-				\buffer, ~ixibuffers[~laukibuffer].bufnum,
+				\buffer, ~ixibuffers[state[\snd]].bufnum,
 				\rate, state[\rate],
 				\pan, state[\pan],
 				\start, state[\range][0],
