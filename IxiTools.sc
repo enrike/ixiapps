@@ -44,13 +44,13 @@ IxiWin {
 		})
 		.mouseDownAction_({ |view, x, y, mod, button|
 			~mouseloc = Point(x,y);
-			if (button==0, { down = true; this.mouseDown(x, y, mod) });
-			if (button==1, { this.rightMouseDown(x, y, mod) });
+			if (button==0, { down = true; this.mouseDown(x, y, mod, button) });
+			if (button==1, { this.rightMouseDown(x, y, mod, button) });
 		})
 		.mouseUpAction_({ |view, x, y, mod, button|
 			~mouseloc = Point(x,y);
-			if (button==0, { down = false; this.mouseUp(x, y, mod) });
-			if (button==1, { this.rightMouseUp(x, y, mod) });
+			if (button==0, { down = false; this.mouseUp(x, y, mod, button) });
+			if (button==1, { this.rightMouseUp(x, y, mod, button) });
 		});
 
 		win.front;
@@ -62,13 +62,17 @@ IxiWin {
 		}.fork(AppClock)
 	}
 
-	close {	run=false }
+	close {	run = false }
 
 	mouseDown {|x, y, mod, button|}
 
 	mouseUp {|x, y, mod, button|}
 
 	mouseMoved {|x, y|}
+
+	rightMouseDown {|x, y, mod, button|}
+
+	rightMouseUp {|x, y, mod, button|}
 
 	keyDown { |char, modifiers, unicode, keycode, key|
 		//[char, modifiers, unicode, keycode, key].postln;

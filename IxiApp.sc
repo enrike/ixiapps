@@ -66,29 +66,14 @@ IxiLaukiControl {
 		.value_(gstate[\out]); // default to sound in
 
 		ActionButton(win,"HELP",{
-/*			"== HELP ==================".postcln;
-			"Lauki by www.ixi-audio.net".postcln;
-			"Click boxes to trigger selected sound".postcln;
-			"SPACE + drag to move boxes".postcln;
-			"Right click boxes for menu".postcln;
-			"Right click background for create box menu".postcln;
-			"==========================".postcln;*/
-			var help = Window.new("Help", Rect(~stagewidth/2, ~stageheigth/2, 250, 100) ).front;
-			StaticText(help).string_(
+			var help = Window.new("Help", Rect(~stagewidth/2, ~stageheight/2, 280, 100) ).front;
+			StaticText(help, 270@90).string_(
 				"Lauki by www.ixi-audio.net \n"++
-				"Click boxes to trigger selected sound \n"++
-				"SPACE + drag to move boxes \n"++
-				"Right click boxes for menu \n"++
-				"Right click background for create box menu"
+				"- Click boxes to trigger selected sound \n"++
+				"- SPACE + drag to move objects \n"++
+				"- Right click objects for context menu \n"++
+				"- Right click background for creation menu"
 			);
-
-/*			SCAlert.new(string:
-				"Lauki by www.ixi-audio.net \n"++
-				"Click boxes to trigger selected sound \n"++
-				"SPACE + drag to move boxes \n"++
-				"Right click boxes for menu \n"++
-				"Right click background for create box menu"
-			)*/
 		});
 
 		win.view.decorator.nextLine;
@@ -435,7 +420,7 @@ IxiLaukiMenu {
 
 	init { |main|
 		Menu(
-			MenuAction("new Lauki", { main.newbox(~mouseloc) });
+			MenuAction("new Lauki", { main.newbox(~mouseloc) }),
 			MenuAction("new Spin", { main.newspin(~mouseloc) });
 		).front
 	}
@@ -552,7 +537,7 @@ LaukiBox : IxiBox {
 	dorate {
 		var rate, prange;
 		prange = ~laukicontrol.gstate[\pitchrange];
-		rate = ( ((~stageheigth-rect.center.y)/~stageheight) * (prange[1]-prange[0]) ) + prange[0];
+		rate = ( ((~stageheight-rect.center.y)/~stageheight) * (prange[1]-prange[0]) ) + prange[0];
 		if( (rate<0.005) && (rate>0.005.neg), {rate = 0.008}); // not too slow
 		^rate
 	}
@@ -643,6 +628,7 @@ LaukiBox : IxiBox {
 			playhOSC = OSCdef(\playhead++id, {|msg, time, addr, recvPort|
 				if (id==msg[2], { curpos = msg[3] });
 			}, '/pos');
+
 		});
 	}
 
