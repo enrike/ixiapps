@@ -288,13 +288,12 @@ Lauki : IxiWin {
 	}
 
 	newbox {|point, state|
-		var box = LaukiBox.new( point, index: boxes.size+1, state: state );
+		var box = LaukiBox.new( point, index: boxes.size+1, state: state, main: this );
 		boxes.add(box);
 		^box;
 	}
 
 	removebox {|box|
-		box.close;
 		boxes.removeAt( boxes.indexOf(box) );
 	}
 
@@ -472,14 +471,16 @@ IxiLaukiBoxMenu {
 
 
 LaukiBox : IxiBox {
-	var <state, synth=nil, <id, curpos=0, loopcount=0, loopOSC, playhOSC;
+	var <state, main, synth=nil, <id, curpos=0, loopcount=0, loopOSC, playhOSC;
 
-	*new { |point, index=0, state|
-		^super.new.init(point, index, state);
+	*new { |point, index=0, state, main|
+		^super.new.init(point, index, state, main);
 	}
 
-	init {|point, index, astate|
+	init {|point, index, astate, amain|
 		super.init(point);
+
+		main = amain;
 
 		synth.free;
 		loopOSC.free;
@@ -634,6 +635,7 @@ LaukiBox : IxiBox {
 		loopcount = 0;
 		synth.free;
 		synth = nil;
+		main.removebox(this); // remove from stack
 		this.release;
 	}
 
