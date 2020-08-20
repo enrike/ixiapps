@@ -179,10 +179,9 @@ IxiLaukiControl {
 			var data = Dictionary.new, boxdata = Dictionary.new,  filename;
 			filename = Date.getDate.stamp++".session";
 
-			// separate global data and boxes data
+			// save buffer abs paths to be able to import them again?
 
-			//data.put(\prange, gstate[\pitchrange]);
-			//data.put(\amp, gstate[\amp]);
+			data.put(\state, gstate);
 
 			main.boxes.do{|box, n|
 				boxdata.put(("box"++n).asSymbol, box.state)
@@ -204,6 +203,8 @@ IxiLaukiControl {
 				controls[\pat_label].string = "Sessions:" + PathName(apath).fileName.split($.)[0];
 
 				main.clear; // killem all
+
+				gstate = data[\state];
 
 				data[\boxdata].do{|next|
 					main.newbox( next[\rect].center, next )
@@ -446,7 +447,10 @@ IxiLaukiMenu {
 	init { |main|
 		Menu(
 			MenuAction("new Lauki", { main.newbox(~mouseloc) }), //center object on mouse loc
-			MenuAction("new Spin", { main.newspin(~mouseloc) });
+			MenuAction("new Spin", {
+				"not yet".postln;
+				//main.newspin(~mouseloc)
+			});
 
 		).front
 	}
