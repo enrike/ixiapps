@@ -133,7 +133,8 @@ IxiLaukiControl {
 
 		IxiSimpleButton(win, "import",{
 			FileDialog({ |apath| // open import
-				var file = PathName.new(apath);
+				this.updatefileimport(apath);
+/*				var file = PathName.new(apath);
 
 				// add item to ~ixibuffers
 				if (~ixibuffers[file.fileName]==nil, { // not there already
@@ -143,7 +144,7 @@ IxiLaukiControl {
 						~ixibuffers.values.collect({|it| PathName(it.path).fileName})
 						//PathName.new(~path).files.collect({|i|i.fileName})
 					)
-				});
+				});*/
 			},
 			fileMode: 0,
 			stripResult: true,
@@ -183,6 +184,8 @@ IxiLaukiControl {
 
 			data.put(\state, gstate);
 
+			data.put(\buffers, ~ixibuffers );
+
 			main.boxes.do{|box, n|
 				boxdata.put(("box"++n).asSymbol, box.state)
 			};
@@ -203,6 +206,10 @@ IxiLaukiControl {
 				controls[\pat_label].string = "Sessions:" + PathName(apath).fileName.split($.)[0];
 
 				main.clear; // killem all
+
+				data[\buffers].do{|buf|
+					this.updatefileimport(buf.path) // read if not already
+				};
 
 				gstate = data[\state];
 
@@ -230,6 +237,20 @@ IxiLaukiControl {
 		});
 
 		win.front;
+	}
+
+	updatefileimport {|apath|
+		var file = PathName.new(apath);
+
+		// add item to ~ixibuffers
+		if (~ixibuffers[file.fileName]==nil, { // not there already
+			~ixibuffers.add( file.fileName -> Buffer.read(Server.default, file.fullPath) );
+			// and update pulldown menu
+			controls[\snd].items_(
+				~ixibuffers.values.collect({|it| PathName(it.path).fileName})
+				//PathName.new(~path).files.collect({|i|i.fileName})
+			)
+		});
 	}
 
 	close { win.close }
