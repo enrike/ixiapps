@@ -205,7 +205,6 @@ IxiLaukiControl {
 				data.do{|next|
 					main.newbox( next[\rect].origin, next )
 				};
-				main.updateselectables;// let know
 			},
 			fileMode: 0,
 			stripResult: true,
@@ -361,7 +360,7 @@ Lauki : IxiWin {
 				box.rightMouseDown(x,y)
 			})
 		});
-		sel.postln;
+
 		sel ?? {IxiLaukiMenu.new(this)};
 	}
 
