@@ -52,7 +52,7 @@ IxiLaukiControl {
 		.items_( Array.fill(16, { arg i; i }) )
 		.action_({|m|
 			gstate[\in] = m.value;
-			main.boxes.collect({|b|b.in(m.value)})
+			main.boxes.do({|b|b.in(m.value)})
 		})
 		.value_(gstate[\in]); // default to sound in
 
@@ -61,17 +61,17 @@ IxiLaukiControl {
 		.items_( Array.fill(16, { arg i; i }) )
 		.action_({|m|
 			gstate[\out] = m.value;
-			main.boxes.collect({|b|b.out(m.value)})
+			main.boxes.do({|b|b.out(m.value)})
 		})
 		.value_(gstate[\out]); // default to sound in
 
 		//win.view.decorator.nextLine;
 
-		ActionButton(win,"VU",{
+		IxiSimpleButton(win,"VU",{
 			Server.default.meter(2,2)
 		});
 
-		ActionButton(win,"HELP",{
+		IxiSimpleButton(win,"HELP",{
 			var help = Window.new("Help", Rect(~stagewidth/2, ~stageheight/2, 280, 100) ).background_(Color.white).front;
 			StaticText(help, 270@90).string_(
 				"Lauki by www.ixi-audio.net \n"++
@@ -91,7 +91,7 @@ IxiLaukiControl {
 		gcontrols[\amp] = Slider(win, 190@20)
 		.action_({ |sl|
 			gstate[\amp] = sl.value;
-			main.boxes.collect({|box| box.amp(sl.value)}) // THIS MUST CONTROL A BUS not individual synths
+			main.boxes.do({|box| box.amp(sl.value)}) // THIS MUST CONTROL A BUS not individual synths
 		})
 		.value_(gstate[\amp]);
 
@@ -102,7 +102,7 @@ IxiLaukiControl {
 		.action_({ |sl|
 			gstate[\pitchrange] = [sl.lo, sl.hi];
 			gcontrols[\range_label].string = "Pitch range" + sl.lo.asStringPrec(2) + ":" + sl.hi.asStringPrec(2);
-			main.boxes.collect({|box| box.range( sl.lo, sl.hi )})
+			main.boxes.do({|box| box.range( sl.lo, sl.hi )})
 		});
 
 		win.view.decorator.nextLine;
@@ -130,7 +130,7 @@ IxiLaukiControl {
 		{controls[\snd].valueAction = 0}.defer(2);// BAD SOLUTION
 
 
-		ActionButton(win, "import",{
+		IxiSimpleButton(win, "import",{
 			FileDialog({ |apath| // open import
 				var file = PathName.new(apath);
 
@@ -150,7 +150,7 @@ IxiLaukiControl {
 			);
 		});
 
-		ActionButton(win,"sample",{
+		IxiSimpleButton(win,"sample",{
 			// REC: create a buffer in ~ixibuffers and stream sound input into it
 			~ixibuffers.add(Date.getDate.stamp -> Buffer.new( Server.default, Server.default.sampleRate*4, 2 ));
 			/*			(
@@ -174,7 +174,7 @@ IxiLaukiControl {
 
 		win.view.decorator.nextLine;
 
-		ActionButton(win,"S",{
+		IxiSimpleButton(win,"S",{
 			var data = Dictionary.new, boxdata = Dictionary.new,  filename;
 			filename = Date.getDate.stamp++".session";
 
@@ -193,7 +193,7 @@ IxiLaukiControl {
 		});
 
 
-		ActionButton(win,"O",{
+		IxiSimpleButton(win,"O",{
 			FileDialog({ |apath| // open import
 				var	data = Object.readArchive(apath);
 				("reading session"+apath).postln;
@@ -212,15 +212,15 @@ IxiLaukiControl {
 			)
 		});
 
-		ActionButton(win,"clear",{
+		IxiSimpleButton(win,"clear",{
 			controls[\pat_label].string = "Sessions";
 			main.clear;
 		});
-		ActionButton(win,"grid",{
+		IxiSimpleButton(win,"grid",{
 			controls[\pat_label].string = "Sessions";
 			main.dogrid;
 		});
-		ActionButton(win,"rloc",{
+		IxiSimpleButton(win,"rloc",{
 			controls[\pat_label].string = "Sessions";
 			main.rand
 		});
@@ -236,7 +236,7 @@ IxiLaukiControl {
 
 
 Lauki : IxiWin {
-	var <boxes, selected, selection, ctrlw, buffer;
+	var <boxes, selected, selection, ctrlw, buffer, uniqueid;
 
 	*new { |width=1024, height=750, path|
 		^super.new.init(width, height, path);//.init(name, rect);
@@ -248,6 +248,8 @@ Lauki : IxiWin {
 		boxes = List.new;
 
 		OSCdef.freeAll;
+
+		uniqueid = 0;
 
 		selection = IxiSelection.new(this);
 
@@ -287,8 +289,9 @@ Lauki : IxiWin {
 	}
 
 	newbox {|point, state|
-		var box = LaukiBox.new( point, index: boxes.size+1, state: state, main: this );
+		var box = LaukiBox.new( point, index: uniqueid, state: state, main: this );
 		boxes.add(box);
+		uniqueid = uniqueid + 1;
 		^box;
 	}
 
@@ -318,11 +321,8 @@ Lauki : IxiWin {
 	}
 
 	clear {
-		boxes.collect({|box|
-			box.close;
-			box.kill;
-			box = nil;
-		});
+		boxes.collect(_.close);
+		boxes.collect(_.kill); // removes them from stack. this is the very last thing to do
 		boxes = List.new;
 	}
 
@@ -424,6 +424,9 @@ IxiLaukiMenu {
 
 
 
+
+
+
 IxiLaukiBoxMenu {
 	*new { |box|
 		^super.new.init(box);
@@ -461,7 +464,10 @@ IxiLaukiBoxMenu {
 			MenuAction("hlock", { box.state[\hlock] = box.state[\hlock].not }).checked_(box.state[\hlock]),
 			MenuAction("vlock", { box.state[\vlock] = box.state[\vlock].not }).checked_(box.state[\vlock]),
 			MenuAction.separator,
-			MenuAction("delete", { box.close; box.kill }) // MUST remove me from main stack
+			MenuAction("delete", {
+				box.close;
+				box.kill // remove me from main stack
+			})
 
 		).front;
 	}
@@ -543,16 +549,16 @@ LaukiBox : IxiBox {
 	}
 
 	in {|chan|
-		synth ?? synth.set(\in, chan)
+		synth !? synth.set(\in, chan)
 	}
 
 	out {|chan|
-		synth ?? synth.set(\out, chan)
+		synth !? synth.set(\out, chan)
 	}
 
 	amp {|val|
 		state[\amp] = val;
-		synth ?? synth.set(\amp, val);
+		synth !? synth.set(\amp, val);
 	}
 
 	range {|start, end|
@@ -583,9 +589,7 @@ LaukiBox : IxiBox {
 
 	setsound {|file|
 		state[\snd] = file;
-		if (synth.notNil,{ // already playing
-			synth.set(\buffer, ~ixibuffers[file].bufnum)
-		})
+		synth !? synth.set(\buffer, ~ixibuffers[file].bufnum)
 	}
 
 	play {
@@ -629,12 +633,12 @@ LaukiBox : IxiBox {
 	}
 
 	close {
+		synth.free;
 		{ bgcolor = Color(1,1,1,0) }.defer(0.1); // because loop flash is defer as well
 		state[\playing] = false;
 		loopOSC.free;
 		playhOSC.free;
 		loopcount = 0;
-		synth.free;
 		synth = nil;
 	}
 

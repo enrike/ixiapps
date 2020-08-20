@@ -89,6 +89,22 @@ IxiWin {
 
 
 
+IxiSimpleButton {
+	*new {|parent, label, action|
+		^super.new.init(parent, label, action);
+	}
+
+	init {|parent, label, action|
+		var skin=GUI.skin;
+		var font = GUI.font.new(*skin.fontSpecs);
+		var w = (label.bounds(font).width + 10).max(18); // (optimalWidth + 10).max(minWidth?20)
+		Button.new(parent, w@GUI.skin.buttonHeight)
+		.states_([
+			[label, Color.black, Color.grey(0.5, 0.2)]
+		])
+		.action_(action);
+	}
+}
 
 
 
@@ -111,7 +127,6 @@ IxiSelection {
 	updateselectables {|ref| selectables = ref } // must know who can be selected
 
 	start {|x,y|
-		"start selection tool".postln;
 		selectables = main.boxes;
 		visible = true;
 		rect = Rect(0,0,0,0);
@@ -123,8 +138,6 @@ IxiSelection {
 
 	stop {|x,y|
 		var actualrect = rect.deepCopy; // calculate the actual rect of the shape for contains
-
-		"calculate selection".postln;
 
 		selectables.collect(_.deselect);// clear all just in case
 		selected = List.new;
