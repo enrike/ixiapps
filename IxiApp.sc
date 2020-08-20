@@ -178,14 +178,16 @@ IxiLaukiControl {
 			var data = Dictionary.new, boxdata = Dictionary.new,  filename;
 			filename = Date.getDate.stamp++".session";
 
+			// separate global data and boxes data
+
 			//data.put(\prange, gstate[\pitchrange]);
 			//data.put(\amp, gstate[\amp]);
 
 			main.boxes.do{|box, n|
-				data.put("box"++n, box.state)
+				boxdata.put(("box"++n).asSymbol, box.state)
 			};
 
-			//data.put(\boxdata, boxdata);
+			data.put(\boxdata, boxdata);
 
 			("saving sessions into" + ~path ++ Platform.pathSeparator ++ "sessions" ++ Platform.pathSeparator ++ filename).postln;
 
@@ -202,7 +204,7 @@ IxiLaukiControl {
 
 				main.clear; // killem all
 
-				data.do{|next|
+				data[\boxdata].do{|next|
 					main.newbox( next[\rect].origin, next )
 				};
 			},
@@ -272,14 +274,14 @@ Lauki : IxiWin {
 			Server.default.sync;
 		};
 
-		this.loaddefault // default session
+		try { this.loaddefault }; // default session
 	}
 
 	loaddefault {
 		var path, data;
 		path = ~path ++ Platform.pathSeparator ++ "sessions"++ Platform.pathSeparator++"default.session";
 		data = Object.readArchive(path);
-		data.do{|next|
+		data[\boxdata].do{|next|
 			this.newbox( next[\rect].origin, next )
 		};
 	}
@@ -569,8 +571,19 @@ LaukiBox : IxiBox {
 		})
 	}
 
+	move {|delta|
+		super.move(delta);
+		state[\rect] = rect;
+		this.update;
+	}
+
+	dragged {|x,y|
+		super.dragged(x,y);
+		state[\rect] = rect;
+		this.update;
+	}
+
 	update {|delta| // called from dragged
-		//super.update(delta);
 		if (synth.notNil, {
 			state[\rate] = this.dorate;
 			state[\pan] = this.dopan;

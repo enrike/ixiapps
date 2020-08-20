@@ -242,7 +242,6 @@ IxiBox {
 
 	move {|delta|
 		rect = rect + delta;
-		this.update;
 	}
 
 	newrect {|x,y|
@@ -252,7 +251,6 @@ IxiBox {
 	dragged {|x,y| // mouseloc
 		var oldr = rect;
 		rect = this.newrect(x,y);
-		this.update;
 		friends.do({|friend|
 			if (friend!=this, { // move friends with me (but not me!)
 				friend.move(rect-oldr)
