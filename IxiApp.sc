@@ -47,7 +47,7 @@ IxiLaukiControl {
 		win.onClose = {};
 
 		// GLOBAL
-		StaticText(win, 15@18).align_(\left).string_("In").resize_(7);
+		StaticText(win, 13@18).align_(\left).string_("In").resize_(7);
 		gcontrols[\in] = PopUpMenu(win, Rect(10, 10, 42, 17))
 		.items_( Array.fill(16, { arg i; i }) )
 		.action_({|m|
@@ -56,7 +56,7 @@ IxiLaukiControl {
 		})
 		.value_(gstate[\in]); // default to sound in
 
-		StaticText(win, 15@18).align_(\left).string_("Out").resize_(7);
+		StaticText(win, 22@18).align_(\left).string_("Out").resize_(7);
 		gcontrols[\out] = PopUpMenu(win, Rect(10, 10, 42, 17))
 		.items_( Array.fill(16, { arg i; i }) )
 		.action_({|m|
@@ -72,7 +72,7 @@ IxiLaukiControl {
 		});
 
 		ActionButton(win,"HELP",{
-			var help = Window.new("Help", Rect(~stagewidth/2, ~stageheight/2, 280, 100) ).front;
+			var help = Window.new("Help", Rect(~stagewidth/2, ~stageheight/2, 280, 100) ).background_(Color.white).front;
 			StaticText(help, 270@90).string_(
 				"Lauki by www.ixi-audio.net \n"++
 				"- Click boxes to trigger selected sound \n"++
@@ -321,6 +321,7 @@ Lauki : IxiWin {
 	clear {
 		boxes.collect({|box|
 			box.close;
+			box.kill;
 			box = nil;
 		});
 		boxes = List.new;
@@ -329,6 +330,7 @@ Lauki : IxiWin {
 	close {
 		~laukicontrol.close;
 		boxes.collect(_.close);
+		boxes.collect(_.kill);
 		super.close;
 	}
 
@@ -460,7 +462,7 @@ IxiLaukiBoxMenu {
 			MenuAction("hlock", { box.state[\hlock] = box.state[\hlock].not }).checked_(box.state[\hlock]),
 			MenuAction("vlock", { box.state[\vlock] = box.state[\vlock].not }).checked_(box.state[\vlock]),
 			MenuAction.separator,
-			MenuAction("delete", { box.close }) // MUST remove me from main stack
+			MenuAction("delete", { box.close; box.kill }) // MUST remove me from main stack
 
 		).front;
 	}
@@ -627,7 +629,7 @@ LaukiBox : IxiBox {
 		});
 	}
 
-	close { // Make sure it is also removed from the main stack
+	close {
 		{ bgcolor = Color(1,1,1,0) }.defer(0.1); // because loop flash is defer as well
 		state[\playing] = false;
 		loopOSC.free;
@@ -635,6 +637,9 @@ LaukiBox : IxiBox {
 		loopcount = 0;
 		synth.free;
 		synth = nil;
+	}
+
+	kill { // Make sure it is also removed from the main stack
 		main.removebox(this); // remove from stack
 		this.release;
 	}
