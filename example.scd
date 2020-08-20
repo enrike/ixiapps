@@ -25,11 +25,13 @@ l.dogrid
 )
 
 
+0.linlin(~laukicontrol.gstate[\pitchrange][0], ~laukicontrol.gstate[\pitchrange][1], 0, ~stageheight)
 
 
 
 
 /* to do
+- modulable offset that adds a silence after each repetition?? would not that be like a Spin
 - reverse pan option
 - right menu delete must remove from stack and kill the instance
 - right menu file selection is not working again atm

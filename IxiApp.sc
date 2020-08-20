@@ -206,7 +206,7 @@ IxiLaukiControl {
 				main.clear; // killem all
 
 				data[\boxdata].do{|next|
-					main.newbox( next[\rect].origin, next )
+					main.newbox( next[\rect].center, next )
 				};
 			},
 			fileMode: 0,
@@ -289,7 +289,7 @@ Lauki : IxiWin {
 		path = ~path ++ Platform.pathSeparator ++ "sessions"++ Platform.pathSeparator++"default.session";
 		data = Object.readArchive(path);
 		data[\boxdata].do{|next|
-			this.newbox( next[\rect].origin, next )
+			this.newbox( next[\rect].center, next )
 		};
 	}
 
@@ -309,7 +309,7 @@ Lauki : IxiWin {
 	}
 
 	dogrid {
-		var x=11,y=11, xgap=27, ygap=27;
+		var x=25,y=25, xgap=27, ygap=27;
 
 		this.clear;
 
@@ -317,7 +317,7 @@ Lauki : IxiWin {
 			var box = this.newbox(Point(x,y));
 			x = x + xgap;
 			if (x > (win.bounds.width-box.size), {
-				x = 10;
+				x = 25;
 				y = y + ygap
 			})
 		})
@@ -445,8 +445,9 @@ IxiLaukiMenu {
 
 	init { |main|
 		Menu(
-			MenuAction("new Lauki", { main.newbox(~mouseloc) }), // MUST inform selection
+			MenuAction("new Lauki", { main.newbox(~mouseloc) }), //center object on mouse loc
 			MenuAction("new Spin", { main.newspin(~mouseloc) });
+
 		).front
 	}
 }

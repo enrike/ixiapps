@@ -190,9 +190,9 @@ IxiBox {
 	}
 
 	init {|point|
-		if ( point.isNil,
-			{ rect = Rect(200,200, size, size) },
-			{ rect = Rect(point.x, point.y , size, size) });
+		if ( point.isNil, //point is rect.origin but we operate with left,top,w,h
+			{ rect = Rect(~stagewidth/2, ~stageheight/2, size, size) - Rect(size/2,size/2,0,0) },
+			{ rect = Rect(point.x, point.y, size, size) - Rect(size/2,size/2,0,0) });
 
 		color = Color.black;
 		initcolor = color;
@@ -245,7 +245,7 @@ IxiBox {
 	}
 
 	newrect {|x,y|
-		^Rect(x,y, size, size) - offset;
+		^Rect(x, y, size, size) - offset;
 	}
 
 	dragged {|x,y| // mouseloc
