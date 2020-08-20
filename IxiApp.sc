@@ -102,7 +102,8 @@ IxiLaukiControl {
 		.action_({ |sl|
 			gstate[\pitchrange] = [sl.lo.linlin(0,1,-2,2).asFloat, sl.hi.linlin(0,1,-2,2).asFloat]; // map 0:1 to -2:2
 			gcontrols[\range_label].string = "Pitch range" + gstate[\pitchrange][0].asStringPrec(2) + ":" + gstate[\pitchrange][1].asStringPrec(2);
-			main.boxes.do({|box| box.updaterate })
+			main.boxes.do({|box| box.updaterate });
+			main.updatelines;
 		});
 
 		win.view.decorator.nextLine;
@@ -237,8 +238,12 @@ IxiLaukiControl {
 
 
 
+
+
+
+
 Lauki : IxiWin {
-	var <boxes, selected, selection, ctrlw, buffer, uniqueid;
+	var <boxes, selected, selection, ctrlw, buffer, uniqueid, lines;
 
 	*new { |width=1024, height=750, path|
 		^super.new.init(width, height, path);//.init(name, rect);
@@ -275,6 +280,8 @@ Lauki : IxiWin {
 		};
 
 		try { this.loaddefault }; // default session
+
+		this.updatelines;
 	}
 
 	loaddefault {
@@ -395,10 +402,31 @@ Lauki : IxiWin {
 	super.keyUp(char, modifiers, unicode, keycode, key);
 	}*/
 
+	updatelines {
+		lines = [
+			[this.calcline(0), Color(1,0,0,0.8)],
+			[this.calcline(1), Color(0,1,0,0.8)],
+			[this.calcline(-1), Color(0,0,1,0.8)],
+		];
+	}
+	calcline{|val|
+		^val.linlin(~laukicontrol.gstate[\pitchrange][0], ~laukicontrol.gstate[\pitchrange][1], ~stageheight, 0)
+	}
+
 	draw {
 		super.draw;
 		boxes.collect(_.draw);
 		selection.draw;
+
+		Pen.lineDash = FloatArray[0.4, 0];
+		lines.do{|line|
+			Pen.color = line[1];
+			Pen.line(
+				Point(0, line[0]),
+				Point(~stagewidth, line[0]) );
+			Pen.stroke;
+		};
+
 	}
 
 	amp {|val|
