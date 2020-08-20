@@ -97,12 +97,12 @@ IxiLaukiControl {
 
 		gcontrols[\range_label] = StaticText(win, 190@18).string_("Pitch range: -2 : 2");
 		gcontrols[\range] = RangeSlider(win, 190@20)
-		.lo_(gstate[\pitchrange][0])
-		.range_(gstate[\pitchrange][1])
+		.lo_(0)
+		.range_(1)
 		.action_({ |sl|
-			gstate[\pitchrange] = [sl.lo, sl.hi];
-			gcontrols[\range_label].string = "Pitch range" + sl.lo.asStringPrec(2) + ":" + sl.hi.asStringPrec(2);
-			main.boxes.do({|box| box.range( sl.lo, sl.hi )})
+			gstate[\pitchrange] = [sl.lo.linlin(0,1,-2,2).asFloat, sl.hi.linlin(0,1,-2,2).asFloat]; // map 0:1 to -2:2
+			gcontrols[\range_label].string = "Pitch range" + gstate[\pitchrange][0].asStringPrec(2) + ":" + gstate[\pitchrange][1].asStringPrec(2);
+			main.boxes.do({|box| box.updaterate })
 		});
 
 		win.view.decorator.nextLine;
@@ -438,7 +438,8 @@ IxiLaukiBoxMenu {
 		var items = ~ixibuffers.values.collect({|it| PathName(it.path).fileName});//sounds
 
 		Menu(
-			MenuAction("box:"+box.id, {}).enabled_(false),
+			MenuAction("box"+box.id, {}).enabled_(false),
+			MenuAction("pitch:"+box.dorate.asStringPrec(4)+"/ pan:"+box.dopan.asStringPrec(1), {}).enabled_(false),
 			CustomViewAction( //SND
 				PopUpMenu()
 				.items_(items)
@@ -544,6 +545,11 @@ LaukiBox : IxiBox {
 		rate = ( ((~stageheight-rect.center.y)/~stageheight) * (prange[1]-prange[0]) ) + prange[0];
 		if( (rate<0.005) && (rate>0.005.neg), {rate = 0.008}); // not too slow
 		^rate
+	}
+
+	updaterate {
+		state[\rate] = this.dorate;
+		synth !? synth.set(\rate, state[\rate]);
 	}
 
 	dopan {
