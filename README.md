@@ -12,3 +12,5 @@ Launch the app by running Lauki.new. Check the example.scd file.
 - SPACE + drag to move objects
 - Right click objects for context menu
 - Right click background for creation menu
+
+[Lauki](enrike.github.com/ixiapps/lauki01.png)
