@@ -134,16 +134,16 @@ IxiLaukiControl {
 		IxiSimpleButton(win, "import",{
 			FileDialog({ |apath| // open import
 				this.updatefileimport(apath);
-/*				var file = PathName.new(apath);
+				/*				var file = PathName.new(apath);
 
 				// add item to ~ixibuffers
 				if (~ixibuffers[file.fileName]==nil, { // not there already
-					~ixibuffers.add( file.fileName -> Buffer.read(Server.default, file.fullPath) );
-					// and update pulldown menu
-					controls[\snd].items_(
-						~ixibuffers.values.collect({|it| PathName(it.path).fileName})
-						//PathName.new(~path).files.collect({|i|i.fileName})
-					)
+				~ixibuffers.add( file.fileName -> Buffer.read(Server.default, file.fullPath) );
+				// and update pulldown menu
+				controls[\snd].items_(
+				~ixibuffers.values.collect({|it| PathName(it.path).fileName})
+				//PathName.new(~path).files.collect({|i|i.fileName})
+				)
 				});*/
 			},
 			fileMode: 0,
@@ -426,9 +426,9 @@ Lauki : IxiWin {
 
 	updatelines {
 		lines = [
-			[this.calcline(0), Color(1,0,0,0.8)],
-			[this.calcline(1), Color(0,1,0,0.8)],
-			[this.calcline(-1), Color(0,0,1,0.8)],
+			[this.calcline(0), Color(1,0,0,0.8), "0"],
+			[this.calcline(1), Color(0,1,0,0.8), "1"],
+			[this.calcline(-1), Color(0,0,1,0.8), "-1"],
 		];
 	}
 	calcline{|val|
@@ -443,6 +443,7 @@ Lauki : IxiWin {
 		Pen.lineDash = FloatArray[0.4, 0];
 		lines.do{|line|
 			Pen.color = line[1];
+			Pen.stringAtPoint(line[2], Point(4, line[0]));
 			Pen.line(
 				Point(0, line[0]),
 				Point(~stagewidth, line[0]) );
@@ -515,11 +516,11 @@ IxiLaukiBoxMenu {
 				})
 			),
 
-			MenuAction("loop", { box.state[\loop] = box.state[\loop].not }).checked_(box.state[\loop]),
-			MenuAction("tigger", {
-				box.state[\trigger] = box.state[\trigger].not }).checked_(box.state[\trigger]),
-			MenuAction("hlock", { box.state[\hlock] = box.state[\hlock].not }).checked_(box.state[\hlock]),
-			MenuAction("vlock", { box.state[\vlock] = box.state[\vlock].not }).checked_(box.state[\vlock]),
+			//to do friends too
+			MenuAction("loop", { box.loop }).checked_(box.state[\loop]),
+			MenuAction("tigger", { box.trigger }).checked_(box.state[\trigger]),
+			MenuAction("hlock", { box.hlock }).checked_(box.state[\hlock]),
+			MenuAction("vlock", { box.vlock }).checked_(box.state[\vlock]),
 			MenuAction.separator,
 			MenuAction("delete", {
 				box.close;
@@ -618,12 +619,37 @@ LaukiBox : IxiBox {
 		synth !? synth.set(\out, chan)
 	}
 
-	amp {|val|
+	amp {|val| //to do friends too
 		state[\amp] = val;
 		synth !? synth.set(\amp, val);
 	}
 
-	range {|start, end|
+	hlock {
+		state[\hlock] = state[\hlock].not;
+		friends.do({|friend|
+			if (friend!=this, {friend.state[\hlock] = state[\hlock]})
+		})
+	}
+	vlock {
+		state[\vlock] = state[\vlock].not;
+		friends.do({|friend|
+			if (friend!=this, {friend.state[\vlock] = state[\vlock]})
+		})
+	}
+	loop {
+		state[\loop] = state[\loop].not;
+		friends.do({|friend|
+			if (friend!=this, {friend.state[\loop] = state[\loop]})
+		})
+	}
+	trigger {
+		state[\trigger] = state[\trigger].not;
+		friends.do({|friend|
+			if (friend!=this, {friend.state[\trigger] = state[\trigger]})
+		})
+	}
+
+	range {|start, end| //to do friends too
 		state[\range] = [start, end];
 		if (synth.notNil, {
 			synth.set(\start, start);
@@ -633,7 +659,7 @@ LaukiBox : IxiBox {
 
 	move {|delta|
 		super.move(delta);
-		state[\rect] = rect;
+		state[\rect] = rect; // check if hlock or vlock
 		this.update;
 	}
 
@@ -660,7 +686,7 @@ LaukiBox : IxiBox {
 		^nrect
 	}
 
-	setsound {|file|
+	setsound {|file| //to do friends too
 		state[\snd] = file;
 		synth !? synth.set(\buffer, ~ixibuffers[file].bufnum)
 	}
