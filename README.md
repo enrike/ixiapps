@@ -13,4 +13,4 @@ Launch the app by running Lauki.new. Check the example.scd file.
 - Right click objects for context menu
 - Right click background for creation menu
 
-[Lauki](lauki01.png)
+[Lauki screenshot](https://github.com/enrike/ixiapps/blob/master/lauki01.png)
