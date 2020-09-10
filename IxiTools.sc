@@ -212,7 +212,7 @@ IxiBox {
 	}
 
 	group {|agroup|
-		this.friends = agroup
+		friends = agroup
 	}
 
 	draw {

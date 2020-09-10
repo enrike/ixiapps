@@ -4,7 +4,7 @@ license GPL
 */
 
 IxiLaukiControl {
-	var win, controls, gcontrols, sfs, >target, main, <gstate;
+	var win, gcontrols, sfs, >target, main, <gstate;
 
 	*new { |name="Control", rect, exepath, main|
 		^super.new.init(name, rect, exepath, main)
@@ -38,7 +38,8 @@ IxiLaukiControl {
 			})
 		});
 
-		controls = Dictionary.new;
+		~inversepan = 1;
+
 		gcontrols = Dictionary.new;
 
 		win = Window(name, rect, resizable: false);
@@ -108,10 +109,21 @@ IxiLaukiControl {
 
 		win.view.decorator.nextLine;
 
+		Button.new(win, 100@18).states_([
+			["Inverse paning", Color.black,],
+			["Inverse paning", Color.green,]
+		]).action_({
+			~inversepan = ~inversepan * 1.neg;
+			//main.boxes.do({|box| box.dopan });
+			main.boxes.collect(_.updatepan);
+		});
+
+		win.view.decorator.nextLine;
+
 		StaticText(win, 50@18).string_("Samples");
 
 
-		controls[\snd] = PopUpMenu(win, 190@20)
+		gcontrols[\snd] = PopUpMenu(win, 190@20)
 		.items_( // produce a list with the filenames
 			//~ixibuffers.values.collect({|it| PathName(it.path).fileName})
 			{var path = ~path ++ Platform.pathSeparator ++ "sounds"++ Platform.pathSeparator;
@@ -128,7 +140,7 @@ IxiLaukiControl {
 			gstate[\sound] = menu.item;
 		});
 
-		{controls[\snd].valueAction = 0}.defer(2);// BAD SOLUTION
+		{gcontrols[\snd].valueAction = 0}.defer(2);// BAD SOLUTION
 
 
 		IxiSimpleButton(win, "import",{
@@ -140,7 +152,7 @@ IxiLaukiControl {
 				if (~ixibuffers[file.fileName]==nil, { // not there already
 				~ixibuffers.add( file.fileName -> Buffer.read(Server.default, file.fullPath) );
 				// and update pulldown menu
-				controls[\snd].items_(
+				gcontrols[\snd].items_(
 				~ixibuffers.values.collect({|it| PathName(it.path).fileName})
 				//PathName.new(~path).files.collect({|i|i.fileName})
 				)
@@ -162,7 +174,7 @@ IxiLaukiControl {
 			}).play(s,[\out, 0, \bufnum, b]);
 			)*/
 			// STOP: stop stream and update controls[\snd].items. and save as wav into sound folder
-			controls[\snd].items_(
+			gcontrols[\snd].items_(
 				~ixibuffers.values.collect({|it| PathName(it.path).fileName})
 			)
 		});
@@ -172,7 +184,7 @@ IxiLaukiControl {
 
 
 		// SESSIONS
-		controls[\pat_label] = StaticText(win, win.bounds.width@18).string_("Sessions");
+		gcontrols[\pat_label] = StaticText(win, win.bounds.width@18).string_("Sessions");
 
 		win.view.decorator.nextLine;
 
@@ -203,7 +215,7 @@ IxiLaukiControl {
 				var	data = Object.readArchive(apath);
 				("reading session"+apath).postln;
 
-				controls[\pat_label].string = "Sessions:" + PathName(apath).fileName.split($.)[0];
+				gcontrols[\pat_label].string = "Sessions:" + PathName(apath).fileName.split($.)[0];
 
 				main.clear; // killem all
 
@@ -212,6 +224,12 @@ IxiLaukiControl {
 				};
 
 				gstate = data[\state];
+
+				gcontrols[\range].activeLo = gstate[\pitchrange][0];
+				gcontrols[\range].activeHi = gstate[\pitchrange][1];
+				gcontrols[\amp].valueAction = gstate[\amp];
+				gcontrols[\in].valueAction = gstate[\in];
+				gcontrols[\out].valueAction = gstate[\out];
 
 				data[\boxdata].do{|next|
 					main.newbox( next[\rect].center, next )
@@ -224,15 +242,15 @@ IxiLaukiControl {
 		});
 
 		IxiSimpleButton(win,"clear",{
-			controls[\pat_label].string = "Sessions";
+			gcontrols[\pat_label].string = "Sessions";
 			main.clear;
 		});
 		IxiSimpleButton(win,"grid",{
-			controls[\pat_label].string = "Sessions";
+			gcontrols[\pat_label].string = "Sessions";
 			main.dogrid;
 		});
 		IxiSimpleButton(win,"rloc",{
-			controls[\pat_label].string = "Sessions";
+			gcontrols[\pat_label].string = "Sessions";
 			main.rand
 		});
 
@@ -246,7 +264,7 @@ IxiLaukiControl {
 		if (~ixibuffers[file.fileName]==nil, { // not there already
 			~ixibuffers.add( file.fileName -> Buffer.read(Server.default, file.fullPath) );
 			// and update pulldown menu
-			controls[\snd].items_(
+			gcontrols[\snd].items_(
 				~ixibuffers.values.collect({|it| PathName(it.path).fileName})
 				//PathName.new(~path).files.collect({|i|i.fileName})
 			)
@@ -265,7 +283,7 @@ IxiLaukiControl {
 
 
 Lauki : IxiWin {
-	var <boxes, selected, selection, ctrlw, buffer, uniqueid, lines;
+	var <boxes, selected, selection, buffer, uniqueid, lines;
 
 	*new { |width=1024, height=750, path|
 		^super.new.init(width, height, path);//.init(name, rect);
@@ -607,8 +625,13 @@ LaukiBox : IxiBox {
 		synth !? synth.set(\rate, state[\rate]);
 	}
 
+	updatepan {
+		state[\pan] = this.dopan;
+		synth !? synth.set(\pan, state[\pan]);
+	}
+
 	dopan {
-		^((rect.center.x/~stagewidth) * 2) - 1
+		^((((rect.center.x/~stagewidth) * 2) - 1 ) * ~inversepan);
 	}
 
 	in {|chan|
@@ -758,6 +781,8 @@ LaukiBox : IxiBox {
 		if (visible == true, {
 			//super.draw;
 			Pen.color = color;
+
+			//Pen.stringAtPoint( state[\rate]+"/"+state[\pan], rect.rightBottom);
 
 			if (state[\loop].not, {
 				Pen.line(
