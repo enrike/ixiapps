@@ -8,7 +8,6 @@ Lauki.new(800, 600) // set win size
 
 
 
-
 (// it can be controlled with code too
 l = Lauki.new;
 l.boxes.do({|box| box.rect.origin = Point.rand * Point(~stagewidth, ~stageheight)}); // random position all
@@ -25,24 +24,17 @@ l.dogrid
 )
 
 
-0.linlin(~laukicontrol.gstate[\pitchrange][0], ~laukicontrol.gstate[\pitchrange][1], 0, ~stageheight)
-
 
 
 
 /* to do
-- modulable offset that adds a silence after each repetition?? would not that be like a Spin
-- reverse pan option
-- right menu delete must remove from stack and kill the instance
-- right menu file selection is not working again atm
-- patterns save/open not saving or opening properly
-- globals only for inter app communication
-- sound pool? how?
 - sample into a buffer and overwrite. sound in chanel set
 - synths group into a bus and control de master volumen from the control panel
-- patters save global parameters as well
-- pattern load make sure it can alway finds the soundfiles
+- modulable offset that adds a silence after each repetition?? would not that be like a Spin
+      - this modulable offset could be drawn as a rectagle that grows on the right of the box | | | |
+- inverse pan option
 - right menu: pause? mute?
+- render optimise?
 */
 
 

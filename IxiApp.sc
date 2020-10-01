@@ -808,6 +808,14 @@ LaukiBox : IxiBox {
 					Point(rect.left+(curpos*size), rect.bottom) );
 				Pen.stroke;
 			})
+
+			/*if (state[\range]!=[0,1], {
+			Pen.color = Color.black;
+			Pen.line(
+			Point(rect.left+(state[\range][0]*size), rect.bottom),
+			Point(rect.left+(state[\range][0]*size), rect.bottom) );
+			Pen.stroke;
+			});*/
 		})
 	}
 }
