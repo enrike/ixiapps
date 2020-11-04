@@ -13,4 +13,9 @@ Launch the app by running Lauki.new. Check the example.scd file.
 - Right click objects for context menu
 - Right click background for creation menu
 
+
+Requires https://github.com/enrike/ehu to be installed. You can install it manually or running this line
+Quarks.install("https://github.com/enrike/ehu")
+
+
 [Lauki screenshot](https://github.com/enrike/ixiapps/blob/master/lauki01.png)
