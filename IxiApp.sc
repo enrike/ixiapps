@@ -68,11 +68,11 @@ IxiLaukiControl {
 
 		//win.view.decorator.nextLine;
 
-		IxiSimpleButton(win,"VU",{
+		SimpleButton(win,"VU",{
 			Server.default.meter(2,2)
 		});
 
-		IxiSimpleButton(win,"HELP",{
+		SimpleButton(win,"HELP",{
 			var help = Window.new("Help", Rect(~stagewidth/2, ~stageheight/2, 280, 100) ).background_(Color.white).front;
 			StaticText(help, 270@90).string_(
 				"Lauki by www.ixi-audio.net \n"++
@@ -143,7 +143,7 @@ IxiLaukiControl {
 		{gcontrols[\snd].valueAction = 0}.defer(2);// BAD SOLUTION
 
 
-		IxiSimpleButton(win, "import",{
+		SimpleButton(win, "import",{
 			FileDialog({ |apath| // open import
 				this.updatefileimport(apath);
 				/*				var file = PathName.new(apath);
@@ -164,7 +164,7 @@ IxiLaukiControl {
 			);
 		});
 
-		IxiSimpleButton(win,"sample",{
+		SimpleButton(win,"sample",{
 			// REC: create a buffer in ~ixibuffers and stream sound input into it
 			~ixibuffers.add(Date.getDate.stamp -> Buffer.new( Server.default, Server.default.sampleRate*4, 2 ));
 			/*			(
@@ -188,7 +188,7 @@ IxiLaukiControl {
 
 		win.view.decorator.nextLine;
 
-		IxiSimpleButton(win,"S",{
+		SimpleButton(win,"S",{
 			var data = Dictionary.new, boxdata = Dictionary.new,  filename;
 			filename = Date.getDate.stamp++".session";
 
@@ -210,7 +210,7 @@ IxiLaukiControl {
 		});
 
 
-		IxiSimpleButton(win,"O",{
+		SimpleButton(win,"O",{
 			FileDialog({ |apath| // open import
 				var	data = Object.readArchive(apath);
 				("reading session"+apath).postln;
@@ -241,15 +241,15 @@ IxiLaukiControl {
 			)
 		});
 
-		IxiSimpleButton(win,"clear",{
+		SimpleButton(win,"clear",{
 			gcontrols[\pat_label].string = "Sessions";
 			main.clear;
 		});
-		IxiSimpleButton(win,"grid",{
+		SimpleButton(win,"grid",{
 			gcontrols[\pat_label].string = "Sessions";
 			main.dogrid;
 		});
-		IxiSimpleButton(win,"rloc",{
+		SimpleButton(win,"rloc",{
 			gcontrols[\pat_label].string = "Sessions";
 			main.rand
 		});
