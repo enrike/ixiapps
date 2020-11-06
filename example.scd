@@ -34,11 +34,11 @@ l.dogrid
 
 
 /* to do
-- sample into a buffer and overwrite. sound in chanel set
+- sample into a buffer and overwrite. sound in channel set
 - synths group into a bus and control de master volumen from the control panel
 - modulable offset that adds a silence after each repetition?? would not that be like a Spin
       - this modulable offset could be drawn as a rectagle that grows on the right of the box | | | |
-- inverse pan option
+
 - right menu: pause? mute?
 - render optimise?
 */
