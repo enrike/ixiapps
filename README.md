@@ -22,9 +22,9 @@ If you don know what that means follow these instructions
 - Download and install Supercollider https://supercollider.github.io/download
 
 - Download and unzip https://github.com/enrike/ehu/archive/master.zip to 
-* Linux: ~/.local/share/SuperCollider/Extensions/
-* Windows: C:\Users\XXXX\SuperCollider\Extensions (not 100% sure if this is the correct path)
-* Mac: ~/Library/Application Support/SuperCollider/Extensions/
+	* Linux: ~/.local/share/SuperCollider/Extensions/
+	* Windows: C:\Users\XXXX\SuperCollider\Extensions (not 100% sure if this is the correct path)
+	* Mac: ~/Library/Application Support/SuperCollider/Extensions/
 
 - Copy to that folder too the content of the ixiApps (https://github.com/enrike/ixiapps/archive/master.zip)
 
