@@ -1,4 +1,4 @@
-~# ixiapps
+# ixiapps
 Attemp to port some of the www.ixi-audio.net classic apps to SuperCollider
 
 www.ixi-audio.net
