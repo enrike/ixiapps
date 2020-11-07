@@ -26,7 +26,7 @@ If you don know what that means follow these instructions
 	* Windows: C:\Users\XXXX\SuperCollider\Extensions (not 100% sure if this is the correct path)
 	* Mac: ~/Library/Application Support/SuperCollider/Extensions/
 
-- Copy to that folder too the content of the ixiApps (https://github.com/enrike/ixiapps/archive/master.zip)
+- Copy to that folder the content of the ixiApps (https://github.com/enrike/ixiapps/archive/master.zip)
 
 - Finally, open SuperCollider and then open the example.scd file that lives in ixiapps folder. Select the line that says "Lauki.new" and press CTRL+ENTER (COMAND+ENTER on Mac)
 
